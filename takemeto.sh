@@ -30,15 +30,34 @@ echo "#                                                                         
 echo "################################################################################################"
 
 # First initialise the terraform architecture if not previously done
-launch_city=$1
 if ! terraform -chdir=terraform init; then
     echo "Terraform init failed"
     cleanup_resources
     exit 1
 fi
 
+# Assume the first script argument is the city name
+launch_city="$1"
+
+# Translate the city name to a workspace name directly
+workplace_name=${launch_city}
+
+# Check if the workspace exists, and create it or switch to it as necessary
+if terraform -chdir=terraform workspace list | grep -qw "${workplace_name}"; then
+    echo "################################################################################################"
+    echo "                      Switching to workspace ${workplace_name}."
+    echo "################################################################################################"
+    terraform -chdir=terraform workspace select "${workplace_name}"
+else
+    echo "################################################################################################"
+    echo "              Workspace ${workplace_name} does not exist. Creating it now."
+    echo "################################################################################################"
+    terraform -chdir=terraform workspace new "${workplace_name}"
+fi
+
+
 # Then apply the terraform changes
-if ! terraform -chdir=terraform apply -auto-approve --var "launch-region=$launch_city" -refresh; then
+if ! terraform -chdir=terraform apply -auto-approve --var "launch-region=$launch_city"; then
     echo "Terraform apply failed"
     cleanup_resources
     exit 1
@@ -60,8 +79,8 @@ echo "##########################################################################
 url="https://$ip"
 
 # The number of seconds to wait between checks
-wait_seconds=$((WAIT_SECONDS + 0))
-max_attempt=$((MAX_ATTEMPT + 0))
+wait_seconds=5
+max_attempt=20
 attempt=0
 success_connect=0
 
@@ -106,7 +125,7 @@ if [ "$success_connect" -eq 1 ]; then
     echo $ovpn_file_path
 
 
-        # Retrieve password from the local credentails file
+    # Retrieve password from the local credentails file
     sed -n "2p" "$VPN_CREDENTIALS_PATH" | pbcopy
     echo "################################################################################################"
     echo "#                                                                                              #"
@@ -125,8 +144,6 @@ if [ "$success_connect" -eq 1 ]; then
 
     # Wait for the user to press enter before exiting
     echo "################################################################################################"
-    read -p "Press enter to disconnect from VPN and destroy the infrastructure..."
-    # Assuming everything worked, clean up the resources
     read -p "Press enter to disconnect from VPN and destroy the infrastructure..."
     cleanup_resources
     rm "$ovpn_file_path"
