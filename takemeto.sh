@@ -32,13 +32,26 @@ fi
 
 export DEFAULT_DOWNLOAD_PATH="$(pwd)/ovpn_config"
 
+# Install dependencies
+if [ ! -e "automation/.requirement.lock" ]; then
+    echo "################################################################################################"
+    echo "#                                                                                              #"    
+    echo "#                         Installing Dependencies...                                          #"
+    echo "#                                                                                              #"
+    echo "################################################################################################"
+    pip install -r automation/requirements.txt
+    
+    # Create the lock file to indicate that the dependencies have been installed
+    touch automation/.requirement.lock
+fi
+
 echo "################################################################################################"
 echo "#                                                                                              #"
 echo "#                         Provisioning Architecture in AWS...                                  #"
 echo "#                                                                                              #"
 echo "################################################################################################"
 
-# First initialise the terraform architecture if not previously done
+# Initialise the terraform architecture if not previously done
 if ! terraform -chdir=terraform init; then
     echo "Terraform init failed"
     cleanup_resources "$launch_city"

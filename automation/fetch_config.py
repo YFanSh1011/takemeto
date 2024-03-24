@@ -57,9 +57,9 @@ def download_client_profile(driver):
     element = WebDriverWait(driver, 10).until(
         EC.element_to_be_clickable(element_locator)
     )
-    time.sleep(2)
+    
     driver.execute_script("arguments[0].click();", element)
-    time.sleep(2)  # Wait for download to start
+    time.sleep(1)  # Wait for download to start
 
     
 def main():

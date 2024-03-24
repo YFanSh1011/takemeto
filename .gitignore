@@ -1,5 +1,9 @@
 terraform/.terraform
 terraform/.terraform.lock.hcl
 terraform/terraform.tfstate*
+
 ovpn_config/*
+
+automation/.requirement.lock
+
 .DS_Store
