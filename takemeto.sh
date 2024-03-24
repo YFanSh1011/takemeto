@@ -1,13 +1,16 @@
 #!/bin/bash
-
-cleanup_resources() {
+function cleanup_resources() {
+    launch_city="$1"
     echo "################################################################################################"
     echo "#                                                                                              #"
     echo "#                                 Cleaning up Resources...                                     #"
     echo "#                                                                                              #"
     echo "################################################################################################"
-    terraform -chdir=terraform destroy -auto-approve
+    terraform -chdir=terraform destroy -auto-approve --var "launch-region=${launch_city}"
 }
+
+# Assume the first script argument is the city name
+launch_city="$1"
 
 echo "################################################################################################"
 echo "#                                                                                              #"
@@ -19,7 +22,7 @@ if [ -f .env ]; then
     export $(cat .env | xargs)
 else
     echo ".env file not found"
-    cleanup_resources
+    cleanup_resources "$launch_city"
     exit 1
 fi
 
@@ -32,34 +35,37 @@ echo "##########################################################################
 # First initialise the terraform architecture if not previously done
 if ! terraform -chdir=terraform init; then
     echo "Terraform init failed"
-    cleanup_resources
+    cleanup_resources "$launch_city"
     exit 1
 fi
 
-# Assume the first script argument is the city name
-launch_city="$1"
 
 # Translate the city name to a workspace name directly
-workplace_name=${launch_city}
+workspace_name=${launch_city}
 
 # Check if the workspace exists, and create it or switch to it as necessary
-if terraform -chdir=terraform workspace list | grep -qw "${workplace_name}"; then
+if terraform -chdir=terraform workspace list | grep -qw "${workspace_name}"; then
     echo "################################################################################################"
-    echo "                      Switching to workspace ${workplace_name}."
+    echo "                      Switching to workspace ${workspace_name}."
     echo "################################################################################################"
-    terraform -chdir=terraform workspace select "${workplace_name}"
+    terraform -chdir=terraform workspace select "${workspace_name}"
 else
     echo "################################################################################################"
-    echo "              Workspace ${workplace_name} does not exist. Creating it now."
+    echo "              Workspace ${workspace_name} does not exist. Creating it now."
     echo "################################################################################################"
-    terraform -chdir=terraform workspace new "${workplace_name}"
+    terraform -chdir=terraform workspace new "${workspace_name}"
 fi
 
 
 # Then apply the terraform changes
-if ! terraform -chdir=terraform apply -auto-approve --var "launch-region=$launch_city"; then
+if ! terraform -chdir=terraform apply -auto-approve \
+    --var "launch-region=$launch_city" \
+    --var "vpn-admin-username=$VPN_ADMIN_USERNAME" \
+    --var "vpn-admin-password=$VPN_ADMIN_PASSWORD" \
+    --var "public-key-file-path=${PUBLIC_KEY_FILEPATH}"; then
+
     echo "Terraform apply failed"
-    cleanup_resources
+    cleanup_resources "$launch_city"
     exit 1
 fi
 
@@ -67,7 +73,7 @@ fi
 ip=$(terraform -chdir=terraform output -raw public_ip)
 if [ -z "$ip" ]; then
     echo "Failed to obtain public IP"
-    cleanup_resources
+    cleanup_resources "$launch_city"
     exit 1
 fi
 
@@ -110,7 +116,7 @@ if [ "$success_connect" -eq 1 ]; then
     
     if ! python fetch_config.py "$url"; then
         echo "Failed to download .ovpn config"
-        cleanup_resources
+        cleanup_resources "$launch_city"
         exit 1
     fi
 
@@ -126,7 +132,7 @@ if [ "$success_connect" -eq 1 ]; then
 
 
     # Retrieve password from the local credentails file
-    sed -n "2p" "$VPN_CREDENTIALS_PATH" | pbcopy
+    echo $VPN_ADMIN_PASSWORD | pbcopy
     echo "################################################################################################"
     echo "#                                                                                              #"
     echo "#                                 Your password is already in clipboard                        #"
@@ -145,11 +151,11 @@ if [ "$success_connect" -eq 1 ]; then
     # Wait for the user to press enter before exiting
     echo "################################################################################################"
     read -p "Press enter to disconnect from VPN and destroy the infrastructure..."
-    cleanup_resources
+    cleanup_resources "$launch_city"
     rm "$ovpn_file_path"
         
 else
     echo "The website is not online."
-    cleanup_resources
+    cleanup_resources "$launch_city"
     exit 1
 fi

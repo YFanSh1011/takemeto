@@ -6,8 +6,8 @@ resource "aws_instance" "vpn-server" {
     associate_public_ip_address = true
 
     user_data = <<-EOF
-    admin_user=${split("\n", file(var.vpn-credential-path))[0]}
-    admin_pw=${split("\n", file(var.vpn-credential-path))[1]}
+    admin_user=${var.vpn-admin-username}
+    admin_pw=${var.vpn-admin-password}
     reroute_gw=1
     reroute_dns=1
     EOF

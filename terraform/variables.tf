@@ -21,9 +21,12 @@ variable "server-ports-udp" {
   default = [ 1194 ]
 }
 
-variable "vpn-credential-path" {
+variable "vpn-admin-username" {
   type = string
-  default = "../credentials.txt"
+}
+
+variable "vpn-admin-password" {
+  type = string
 }
 
 variable "region-city-mapping" {
