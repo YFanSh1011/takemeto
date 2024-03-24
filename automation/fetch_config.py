@@ -6,6 +6,7 @@ from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
+from webdriver_manager.chrome import ChromeDriverManager
 
 DASHBOARD_URL = sys.argv[1]
 VPN_ADMIN_USERNAME = os.getenv("VPN_ADMIN_USERNAME")
@@ -22,13 +23,13 @@ def configure_webdriver():
     download_prefs = {"download.default_directory": DEFAULT_DOWNLOAD_PATH}
     options.add_experimental_option("prefs", download_prefs)
 
-    driver = webdriver.Chrome(options=options)
+    driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()), options=options)
     return driver
 
 def login_to_dashboard(driver, username, password):
     driver.get(DASHBOARD_URL)
     print("Attempting to connect to", DASHBOARD_URL)
-
+    
     # Wait until the login page is loaded
     WebDriverWait(driver, 10).until(
         lambda driver: driver.find_element(By.ID, "username")
@@ -61,7 +62,6 @@ def download_client_profile(driver):
     driver.execute_script("arguments[0].click();", element)
     time.sleep(1)  # Wait for download to start
 
-    
 def main():
     driver = configure_webdriver()
     login_to_dashboard(driver, VPN_ADMIN_USERNAME, VPN_ADMIN_PASSWORD)
