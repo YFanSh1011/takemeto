@@ -6,7 +6,11 @@ function cleanup_resources() {
     echo "#                                 Cleaning up Resources...                                     #"
     echo "#                                                                                              #"
     echo "################################################################################################"
-    terraform -chdir=terraform destroy -auto-approve --var "launch-region=${launch_city}"
+    terraform -chdir=terraform destroy -auto-approve \
+        --var "launch-region=${launch_city}" \
+        --var "vpn-admin-username=$VPN_ADMIN_USERNAME" \
+        --var "vpn-admin-password=$VPN_ADMIN_PASSWORD" \
+        --var "public-key-file-path=${PUBLIC_KEY_FILEPATH}"
 }
 
 # Assume the first script argument is the city name
@@ -25,6 +29,8 @@ else
     cleanup_resources "$launch_city"
     exit 1
 fi
+
+export DEFAULT_DOWNLOAD_PATH="$(pwd)/ovpn_config"
 
 echo "################################################################################################"
 echo "#                                                                                              #"
@@ -114,7 +120,7 @@ if [ "$success_connect" -eq 1 ]; then
     echo "#                                                                                              #"
     echo "################################################################################################"
     
-    if ! python fetch_config.py "$url"; then
+    if ! python3 automation/fetch_config.py "$url"; then
         echo "Failed to download .ovpn config"
         cleanup_resources "$launch_city"
         exit 1
