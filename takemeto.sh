@@ -1,4 +1,10 @@
 #!/bin/bash
+function display_city_options() {
+    echo "Supported regions:"
+    echo ""
+    cat allowed_regions.txt
+}
+
 function cleanup_resources() {
     launch_city="$1"
     echo "################################################################################################"
@@ -13,8 +19,30 @@ function cleanup_resources() {
         --var "public-key-file-path=${PUBLIC_KEY_FILEPATH}"
 }
 
-# Assume the first script argument is the city name
 launch_city="$1"
+
+# Check if the city name is provided
+if [ -z "$launch_city" ]; then
+    echo "################################################################################################"
+    echo "#                               ERROR: City name is required                                   #"
+    echo "################################################################################################"
+    display_city_options
+    exit 1
+fi
+
+# Check if the city name is in allowed_regions.txt
+if [ "$(grep -c "$launch_city" allowed_regions.txt)" -eq 0 ]; then
+    echo "################################################################################################"
+    echo "#                           ERROR: City name is not supported                                  #"
+    echo "################################################################################################"
+    display_city_options
+    exit 1
+fi
+
+echo "################################################################################################"
+echo "#                               Congrats, city is supported!                                   #"
+echo "################################################################################################"
+
 
 echo "################################################################################################"
 echo "#                                                                                              #"

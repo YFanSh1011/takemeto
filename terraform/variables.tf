@@ -2,12 +2,15 @@ variable "instance-type" {
   type = string
 }
 
+variable "default-region" {
+  type = string
+}
+
 variable "public-key-file-path" {
   type = string
 }
 
 variable "launch-region" {
-  default = "sydney"
   type = string
 }
 
