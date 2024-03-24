@@ -60,18 +60,6 @@ fi
 
 export DEFAULT_DOWNLOAD_PATH="$(pwd)/ovpn_config"
 
-# Install dependencies
-if [ ! -e "automation/.requirement.lock" ]; then
-    echo "################################################################################################"
-    echo "#                                                                                              #"    
-    echo "#                         Installing Dependencies...                                          #"
-    echo "#                                                                                              #"
-    echo "################################################################################################"
-    pip install -r automation/requirements.txt
-    
-    # Create the lock file to indicate that the dependencies have been installed
-    touch automation/.requirement.lock
-fi
 
 echo "################################################################################################"
 echo "#                                                                                              #"
