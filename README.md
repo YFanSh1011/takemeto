@@ -77,7 +77,7 @@ Contributions to `takemeto` are welcome! Follow these steps to contribute:
 
 - **Integration with Additional Cloud Providers**: While `takemeto` currently supports AWS, diversifying cloud service options is on the agenda. Expanding its capabilities to include Google Cloud Platform (GCP) and Microsoft Azure will allow users to deploy VPN infrastructure on their platform of choice, enhancing versatility.
 
-- **Simultaneous Multi-Region Deployment**: Enhancing `takemeto` to support the setup of VPNs across multiple regions simultaneously is a key goal. This will offer users the ability to create a more resilient and high-performing network infrastructure that spans globally.
+- **Support for Multiple Operating Systems**: Currently optimized for MacOS, I understand the importance of cross-platform compatibility. Moving forward, I intend to make `takemeto` accessible to a wider audience by ensuring it is compatible with other major operating systems, including multiple distributions of Linux.
 
 - **Customizable Installation Script and Remote User Profile Fetching**: I'm exploring the idea of replacing the existing OpenVPN AMI with a customizable installation script. This would grant users more control over the VPN setup process and allow for a tailored VPN environment. Additionally, incorporating the capability to fetch user profiles remotely would streamline user management and remove the necessity of browser automation.
 
